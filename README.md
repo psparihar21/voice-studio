@@ -21,3 +21,7 @@ Set `VOICE_STUDIO_PY` to a Python that has `faster-whisper`, `VOICE_STUDIO_SCRIP
 
 ## Your data
 `recordings/`, `script.json`, `my-script.txt`, `cues.json`, `video.json` and the proxy videos are created next to `server.py` and are git-ignored.
+
+## License
+
+All rights reserved. The source is public for viewing only; see [LICENSE](LICENSE). A free, ad-supported hosted version is planned.
