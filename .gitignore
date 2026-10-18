@@ -1,0 +1,11 @@
+# your own recordings, scripts and video stay on your machine
+recordings/
+proxy*.mp4
+_proxy_new.mp4
+_incoming_video.tmp
+my-script.txt
+script.json
+cues.json
+video.json
+__pycache__/
+*.pyc
