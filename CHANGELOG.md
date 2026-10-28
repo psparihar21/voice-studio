@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.0 (2026-10-28)
+
+### Added
+- Resizable layout. Drag the bar under the video to make the picture taller or shorter; the controls below move with it. Drag the bar between the columns to change the side panel width. Both work with the arrow keys (Shift for bigger steps), reset on double-click or Home, and are remembered between sessions.
+- `scripts/make_demo.py` builds a demo project with no third-party footage.
+- `scripts/screenshots.mjs` regenerates every README image and the resize GIF through headless Chrome.
+
+### Docs
+- README rewritten as a user guide: install, a step-by-step walkthrough, shortcuts, recording tips, settings, troubleshooting. Five new images.
+
 ## 2.0.0 (2026-10-28)
 
 This is a full rebuild as a product. Every version 1 feature is kept, and version 1 data folders work as they are.

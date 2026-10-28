@@ -528,6 +528,54 @@
     $(id).onchange = function(){ store(id, $(id).checked ? '1' : '0'); };
   });
   pv.addEventListener('loadedmetadata', renderTicks);
+  /* ---------- resizable picture: drag the grip under the video (height) or between the columns (width) ---------- */
+  (function(){
+    var stage = document.querySelector('.stage'), shell = document.querySelector('.shell');
+    var lims = {
+      h: function(){ return [160, Math.max(240, innerHeight - 90)]; },
+      w: function(){ return [280, Math.max(300, shell.clientWidth * 0.55)]; }
+    };
+    function clamp(v, l){ return Math.round(Math.min(l[1], Math.max(l[0], v))); }
+    function setH(h, save){
+      if (h == null){ stage.style.height = ''; stage.classList.remove('sized'); }
+      else { stage.style.height = clamp(h, lims.h()) + 'px'; stage.classList.add('sized'); }
+      if (save) store('stageH', h == null ? '' : String(stage.offsetHeight));
+      renderTicks();
+    }
+    function setW(w, save){
+      if (w == null) shell.style.removeProperty('--side-w'); else shell.style.setProperty('--side-w', clamp(w, lims.w()) + 'px');
+      if (save) store('sideW', w == null ? '' : shell.style.getPropertyValue('--side-w').replace('px', ''));
+      if (!panel.hidden) clampPanel();
+    }
+    function grip(el, axis){
+      var start = null;
+      el.addEventListener('pointerdown', function(e){
+        if (e.button !== 0) return;
+        start = axis === 'h' ? {p: e.clientY, v: stage.offsetHeight} : {p: e.clientX, v: document.querySelector('.side').offsetWidth};
+        el.classList.add('drag'); document.body.classList.add('resizing', axis === 'h' ? 'rows' : 'cols');
+        try{ el.setPointerCapture(e.pointerId); }catch(err){} e.preventDefault();
+      });
+      el.addEventListener('pointermove', function(e){
+        if (!start) return;
+        if (axis === 'h') setH(start.v + (e.clientY - start.p)); else setW(start.v - (e.clientX - start.p));
+      });
+      function end(){ if (!start) return; start = null; el.classList.remove('drag'); document.body.classList.remove('resizing', 'rows', 'cols'); axis === 'h' ? setH(stage.offsetHeight, true) : setW(parseFloat(shell.style.getPropertyValue('--side-w')) || null, true); }
+      el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+      el.addEventListener('dblclick', function(){ axis === 'h' ? setH(null, true) : setW(null, true); say('<span class="note">' + (axis === 'h' ? 'Video height' : 'Panel width') + ' reset.</span>'); });
+      el.addEventListener('keydown', function(e){  // keep arrows from also seeking the video
+        var step = e.shiftKey ? 60 : 20, d = 0;
+        if (axis === 'h' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) d = e.key === 'ArrowDown' ? step : -step;
+        if (axis === 'w' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) d = e.key === 'ArrowLeft' ? step : -step;
+        if (e.key === 'Home'){ e.preventDefault(); e.stopPropagation(); axis === 'h' ? setH(null, true) : setW(null, true); return; }
+        if (!d) return; e.preventDefault(); e.stopPropagation();
+        if (axis === 'h') setH(stage.offsetHeight + d, true); else setW(document.querySelector('.side').offsetWidth + d, true);
+      });
+    }
+    grip($('stageGrip'), 'h'); grip($('sideGrip'), 'w');
+    var h = parseFloat(store('stageH')), w = parseFloat(store('sideW'));
+    if (w) setW(w); if (h) setH(h);
+    window.addEventListener('resize', function(){ if (stage.classList.contains('sized')) setH(stage.offsetHeight); if (shell.style.getPropertyValue('--side-w')) setW(parseFloat(shell.style.getPropertyValue('--side-w'))); });
+  })();
   pv.addEventListener('seeked', function(){ var k = lastHeld >= 0 && cues[lastHeld] ? cues[lastHeld].t : null; if (k !== null && pv.currentTime < k - 0.6) lastHeld = -1; });
   /* script follows the picture: scroll to the [m:ss] block that is on screen */
   var mirror = null;

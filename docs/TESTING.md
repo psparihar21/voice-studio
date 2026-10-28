@@ -35,7 +35,7 @@ Two automated reviews ran on version 2.0.0 before release: a security review and
 - A new recording could overwrite unrecovered crash audio. That audio is now recovered as a take first.
 - Truncated uploads were accepted. They are now refused.
 
-## UAT (28 Oct 2026, Chrome, Windows 11, RTX 5070)
+## UAT (28 Oct 2026, Chrome, Windows 11, RTX 5070; rows 13-17 added in 2.1.0)
 
 These checks were run against a copy of real project data, with a simulated 220 Hz microphone at −12 dBFS:
 
@@ -53,5 +53,10 @@ These checks were run against a copy of real project data, with a simulated 220 
 | 10 | Switch project while a job runs | Pass (refused, with a message) |
 | 11 | Switch project when idle | Pass (new video, flags and script; old takes in recordings_archive/gta6in) |
 | 12 | Phone width 375 px | Pass (no sideways scroll) |
+| 13 | Drag the grip under the video up by 146 px (2.1.0) | Pass. The video went from 527 to 381 px and the record controls moved up 146 px |
+| 14 | Drag the column grip; it stops at the 280 px minimum | Pass |
+| 15 | Arrow keys on the grips (Shift = bigger step) resize without seeking the video | Pass (381 → 461 px; the video stayed at 0:20) |
+| 16 | The layout survives a reload; double-click resets it | Pass |
+| 17 | Phone width: the column grip is hidden and the height grip works | Pass (210 → 270 px, no sideways scroll) |
 
 Not covered by UAT: a physical microphone (a simulated one was used), the Change video button through the file picker (the server side is covered by the automated tests), and macOS or Linux.

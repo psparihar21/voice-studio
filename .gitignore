@@ -13,3 +13,4 @@ sets/
 *.mp4
 voice-studio.log*
 config.json
+demo/

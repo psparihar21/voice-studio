@@ -44,7 +44,7 @@ select{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
 .spacer{flex:1}
 
 /* layout */
-.shell{display:grid;grid-template-columns:minmax(0,1fr) 390px;grid-template-rows:minmax(0,1fr);gap:18px;width:100%;max-width:1640px;margin:0 auto;padding:14px 20px 16px;flex:1;min-height:0}
+.shell{display:grid;grid-template-columns:minmax(0,1fr) 12px var(--side-w,390px);grid-template-rows:minmax(0,1fr);gap:3px;width:100%;max-width:1640px;margin:0 auto;padding:14px 20px 16px;flex:1;min-height:0}
 .col{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;overflow-y:auto}
 .col>*{flex:none}
 .side{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0;overflow-y:auto;padding-right:4px}
@@ -73,6 +73,20 @@ select{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
 .pausehint{position:absolute;left:50%;top:14px;transform:translateX(-50%);max-width:92%;background:rgba(10,12,17,.94);border:1px solid var(--warn);border-radius:12px;padding:9px 16px;font-size:14px;line-height:1.4;text-align:center}
 .pausehint[hidden]{display:none}
 #vidInfo{margin-top:-2px}
+.stage.sized{flex:none!important}
+
+/* resize grips: under the picture (height) and between the columns (width) */
+.hsplit,.vsplit{position:relative;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;border-radius:8px;outline-offset:-2px}
+.hsplit{height:14px;margin:-6px 0 -6px;cursor:row-resize}
+.vsplit{cursor:col-resize}
+.hsplit i,.vsplit i{display:block;background:var(--line2);border-radius:3px;transition:background .12s,transform .12s}
+.hsplit i{width:56px;height:4px}
+.vsplit i{width:4px;height:56px}
+.hsplit:hover i,.vsplit:hover i,.hsplit.drag i,.vsplit.drag i,.hsplit:focus-visible i,.vsplit:focus-visible i{background:var(--accent)}
+.hsplit.drag i{transform:scaleX(1.6)} .vsplit.drag i{transform:scaleY(1.6)}
+body.resizing,body.resizing *{cursor:inherit!important}
+body.resizing.rows{cursor:row-resize} body.resizing.cols{cursor:col-resize}
+body.resizing video{pointer-events:none}
 
 /* transport */
 .prog{position:relative;height:8px;background:#06080b;border:1px solid var(--line);border-radius:6px;overflow:hidden}
@@ -164,5 +178,7 @@ dialog td:first-child{white-space:nowrap}
   .stage{height:56vw;min-height:200px;max-height:60vh}
   .top{padding:10px 12px}
   .divider{display:none}
+  .vsplit{display:none}
+  .hsplit{margin:-4px 0 4px}
 }
 @media (prefers-reduced-motion:reduce){.live>i,.spin,.nextb b.pop{animation:none}button{transition:none}}
