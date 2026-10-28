@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Studio</title>
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <img src="/static/icon.svg" alt="" width="30" height="30">
+    <div>Voice Studio<small id="brandSub">voice-over recorder</small></div>
+  </div>
+  <label class="setpick" id="setPick" hidden><span>Project</span><select id="setSel" aria-label="Project"></select></label>
+  <div class="divider"></div>
+  <div class="pill" id="micPill"><i></i><span id="micTxt">Microphone off</span></div>
+  <button id="micBtn" class="ghost">Enable microphone</button>
+  <select id="micSel" aria-label="Microphone" hidden></select>
+  <div class="meter" title="Input level"><i id="meterFill"></i><b id="meterPeak"></b></div>
+  <span id="meterTxt" class="note meterTxt">&nbsp;</span>
+  <div class="spacer"></div>
+  <nav class="actions" aria-label="Studio actions">
+    <button id="testBtn" hidden title="Say a sentence and check the level">Test mic</button>
+    <button id="roomBtn" title="Record 10 seconds of the quiet room, used to clean the noise">Room tone</button>
+    <button id="myScriptBtn" title="Open your own script to read from while you record">My script</button>
+    <button id="vidChangeBtn" title="Use a different video to record against">Change video</button>
+    <input type="file" id="vidFile" accept="video/*" hidden>
+    <button id="folderBtn" title="Open the folder with your takes">Open folder</button>
+    <button id="helpBtn" class="icon" aria-label="Keyboard shortcuts and about">?</button>
+    <button id="exportBtn" class="primary">Finish</button>
+  </nav>
+</header>
+<div class="shell">
+  <main class="col">
+    <div class="stage">
+      <video id="pv" src="/proxy.mp4" muted playsinline preload="auto"></video>
+      <div class="live" id="live" hidden><i id="dot"></i><span id="liveTxt">REC 0:00</span><span class="badge ok" id="bAud">mic on</span><span class="badge ok" id="bVid">video playing</span></div>
+      <div class="overlay" id="count" hidden></div>
+      <div class="nowp" id="nowp" hidden></div>
+      <div class="nextb" id="nextb" hidden><div><small>Next part in</small><span id="nextLbl"></span></div><b id="nextNum">3</b></div>
+      <div class="pausehint" id="pauseHint" hidden><b>Paused.</b> Drag the slider below back to the part you want to redo, then press Resume. The old attempt is flagged and cut later.</div>
+      <div class="holdb" id="holdb" hidden><span id="holdTxt"></span><button id="holdGo" class="primary">Continue ▶ <kbd>V</kbd></button></div>
+    </div>
+    <div class="note" id="vidInfo"></div>
+    <div class="prog" id="prog" aria-hidden="true"><i id="progFill"></i></div>
+    <div class="tp" id="tp" role="group" aria-label="Video controls">
+      <button id="playBtn" aria-label="Play or pause the video" title="Play or pause (K)">▶</button>
+      <div class="seekwrap"><input type="range" id="seek" min="0" max="1000" value="0" aria-label="Video position"><div class="ticks" id="ticks"></div></div>
+      <span id="tpTime">0:00 / 0:00</span>
+    </div>
+    <section class="panel">
+      <div class="bar">
+        <button id="recBtn" class="recbtn">● Record the whole video <kbd>Space</kbd></button>
+        <button id="restartBtn" hidden>Start over</button>
+        <button id="watchBtn">Watch the video first</button>
+        <div class="opts">
+          <label><input type="checkbox" id="countIn" checked> 3-2-1 count-in</label>
+        </div>
+      </div>
+      <div class="ctl bar" id="ctl">
+        <button id="audBtn" title="Pause everything: stops saving your voice and pauses the video too.">⏸ Pause recording <kbd>A</kbd></button>
+        <button id="vidBtn" title="Freeze the picture. Your voice keeps being recorded.">⏸ Pause video <kbd>V</kbd></button>
+        <button id="redoBtn" title="Go back 5 seconds and say that bit again. The slip is flagged so it gets cut out later.">↺ Redo last 5 s <kbd>R</kbd></button>
+        <button id="flagBtn" title="Mark a slip without stopping. It gets cut out later.">✂ Mark a slip <kbd>M</kbd></button>
+        <button id="backBtn" title="Jump the picture back 5 seconds, no flag">⟲ −5 s <kbd>B</kbd></button>
+      </div>
+      <div class="bar" id="flagBar">
+        <button id="prevFlag" title="Jump to the previous flag">⏮ Previous flag <kbd>P</kbd></button>
+        <button id="nextFlag" title="Jump to the next flag">⏭ Next flag <kbd>N</kbd></button>
+        <button id="addFlag" title="Add a flag at this moment of the video">⚑ Add flag here <kbd>F</kbd></button>
+        <div class="opts">
+          <label title="When the picture reaches a flag it stops and waits, so you can finish what you are saying. Your voice keeps recording."><input type="checkbox" id="holdOn"> hold the picture at each flag</label>
+          <label title="Plays a short tick during the 3-2-1 before a flag. Use headphones, or the mic will hear it."><input type="checkbox" id="beepOn"> countdown ticks (headphones)</label>
+        </div>
+      </div>
+    </section>
+    <div id="feedback" role="status" aria-live="polite"></div>
+  </main>
+  <aside class="side">
+    <div class="card" id="readyCard">
+      <h2>Ready to record?</h2>
+      <div class="check" id="check">
+        <div id="ck1">Microphone is on</div>
+        <div id="ck2">Level tested</div>
+        <div id="ck3">Room tone saved <span class="note">(optional)</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Flags <button class="hb" id="flagReload" title="Put the original section flags back">Reset to sections</button></h2>
+      <div id="flagList"><div class="note">No flags yet. Press F while the video plays to add one.</div></div>
+    </div>
+    <div class="card">
+      <h2>Your takes</h2>
+      <div id="takes"></div>
+    </div>
+    <p class="note tip">Watch the video, then record in one go while it plays. The picture is silent, so talk over it in your own words. Keep the mic about 10 cm away and leave a second of quiet at the start and the end. Stumbled? Press <b>R</b> to redo the last 5 seconds, or just say the line again: the bad bits are cut out afterwards. Choose the take to use and press <b>Finish</b>.</p>
+  </aside>
+</div>
+<dialog id="helpDlg">
+  <div class="dh"><b>Keyboard shortcuts</b><button class="closeBtn">Close</button></div>
+  <div class="db"><table>
+    <tr><td><kbd>Space</kbd></td><td>Start or stop recording</td></tr>
+    <tr><td><kbd>A</kbd></td><td>Pause or resume everything: your voice and the video</td></tr>
+    <tr><td><kbd>V</kbd></td><td>Pause or resume the video (voice keeps recording)</td></tr>
+    <tr><td><kbd>R</kbd></td><td>Redo the last 5 seconds: rewinds the picture and flags the slip</td></tr>
+    <tr><td><kbd>M</kbd></td><td>Mark a slip and keep going (it gets cut out later)</td></tr>
+    <tr><td><kbd>F</kbd></td><td>Add a flag at this moment of the video</td></tr>
+    <tr><td><kbd>N</kbd> <kbd>P</kbd></td><td>Jump to the next or previous flag</td></tr>
+    <tr><td><kbd>Enter</kbd></td><td>Continue after the picture was held at a flag</td></tr>
+    <tr><td><kbd>H</kbd></td><td>Turn "hold the picture at each flag" on or off</td></tr>
+    <tr><td><kbd>B</kbd></td><td>Jump the picture back 5 seconds</td></tr>
+    <tr><td><kbd>K</kbd></td><td>Play or pause the video when you are not recording</td></tr>
+    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Skip 5 seconds back or forward (while recording, only when paused)</td></tr>
+    <tr><td><kbd>?</kbd></td><td>Show this list</td></tr>
+  </table>
+  <p class="note about" id="aboutTxt"></p></div>
+</dialog>
+<div id="scriptPanel" class="floatp" hidden role="dialog" aria-label="Script reader">
+  <div class="fh" id="scriptDrag">
+    <button id="tabMine" class="tab on">My script</button><button id="tabTake" class="tab">Take script</button><span class="sp"></span>
+    <button id="fMinus" title="Smaller text" aria-label="Smaller text">A−</button><button id="fPlus" title="Bigger text" aria-label="Bigger text">A+</button>
+    <input type="range" id="fOp" min="35" max="100" value="96" title="See-through" aria-label="See-through">
+    <button id="scriptClose" aria-label="Close">✕</button></div>
+  <div class="fsub">
+    <button id="scrollBtn" title="Scroll the text slowly like a teleprompter">▶ Auto-scroll</button>
+    <input type="range" id="scrollSpd" min="5" max="120" value="30" title="Scroll speed" aria-label="Scroll speed">
+    <label title="Start scrolling when you press Record"><input type="checkbox" id="scrollRec"> with recording</label>
+    <label title="Scroll the script to the part that is on screen. Needs [m:ss] lines in the script."><input type="checkbox" id="followVid" checked> follow the video</label>
+    <span class="sp"></span><span id="saveNote" class="note"></span>
+    <button id="saveTake" hidden>Save edit</button><button id="copyBtn">Copy</button><button id="dlBtn" class="primary" hidden>Download</button>
+  </div>
+  <textarea id="scriptText" spellcheck="false" aria-label="Script" placeholder="Paste or type your script here. It saves by itself. Press Esc to leave the box, then Space starts recording."></textarea>
+</div>
+<audio id="player" preload="none"></audio>
+</body>
+</html>

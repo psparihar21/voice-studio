@@ -1,260 +1,13 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voice Studio</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff4d4f'/%3E%3Crect x='12' y='5' width='8' height='14' rx='4' fill='white'/%3E%3Cpath d='M8 15a8 8 0 0 0 16 0M16 23v4' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-<style>
-:root{
-  --bg:#0c0f12; --panel:#14181d; --panel2:#1a1f26; --line:#262d36; --line2:#36404b; --fg:#eef1f4; --muted:#8e99a6;
-  --rec:#ff4d4f; --ok:#4fd18b; --warn:#f0b64a; --accent:#7fb2ff;
-  --font:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
-}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14.5px}
-button,select,input{font:inherit;color:inherit}
-button{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 13px;cursor:pointer;transition:border-color .12s,background .12s}
-button:hover:not(:disabled){border-color:var(--line2);background:#212832}
-button:disabled{opacity:.45;cursor:default}
-button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-button.primary{background:var(--accent);border-color:var(--accent);color:#06101f;font-weight:600}
-button.primary:hover:not(:disabled){background:#9cc3ff}
-kbd{font:11.5px var(--font);color:var(--muted);border:1px solid var(--line2);border-radius:5px;padding:0 6px;margin-left:8px;background:rgba(0,0,0,.18)}
-select{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;max-width:230px}
-.top{display:flex;align-items:center;gap:16px;padding:10px 20px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
-.brand svg{width:28px;height:28px}
-.brand small{display:block;color:var(--muted);font-weight:500;font-size:12px;margin-top:1px}
-.pill{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 10px;background:var(--panel2);color:var(--muted);font-size:13px}
-.pill i{width:8px;height:8px;border-radius:50%;background:#59636f}
-.pill.ok i{background:var(--ok)} .pill.ok{color:var(--fg)}
-.meter{position:relative;width:130px;height:8px;background:#080a0c;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.meter i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ok);transition:width .05s linear}
-.meter b{position:absolute;top:0;bottom:0;width:2px;background:#fff;left:0}
-.spacer{flex:1}
-.shell{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:18px;max-width:1500px;margin:0 auto;padding:16px 20px 24px}
-.col{display:flex;flex-direction:column;gap:12px;min-width:0}
-.stage{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000}
-.stage video{display:block;width:100%;height:calc(100vh - 350px);min-height:200px;background:#000;object-fit:contain}
-.overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(8,10,12,.74);font-size:min(22vw,180px);font-weight:700}
-.overlay[hidden]{display:none}
-.live{position:absolute;left:12px;top:12px;display:flex;gap:8px;align-items:center;background:rgba(12,15,18,.85);border:1px solid var(--line);padding:5px 10px;border-radius:999px;font-variant-numeric:tabular-nums;font-size:13px}
-.live[hidden]{display:none}
-.live>i{width:10px;height:10px;border-radius:50%;background:var(--rec);animation:pulse 1.1s ease-in-out infinite}
-@keyframes pulse{50%{opacity:.3}}
-@media (prefers-reduced-motion:reduce){.live>i,.spin{animation:none}}
-.badge{display:inline-flex;align-items:center;font-size:12px;padding:1px 9px;border-radius:999px;border:1px solid var(--line2)}
-.badge.warn{border-color:var(--warn);color:var(--warn)} .badge.ok{border-color:var(--ok);color:var(--ok)}
-.tp{display:flex;align-items:center;gap:12px;padding:6px 4px}
-.tp button{width:42px;height:38px;padding:0;font-size:16px}
-.tp input[type=range]{flex:1;accent-color:var(--accent);height:24px;cursor:pointer}
-.tp input[type=range]:disabled{cursor:default;opacity:.5}
-.tp span{font-variant-numeric:tabular-nums;color:var(--muted);min-width:96px;text-align:right}
-.prog{position:relative;height:10px;background:#080a0c;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.prog i{display:block;height:100%;width:0;background:var(--accent)}
-.prog b{position:absolute;top:0;bottom:0;width:3px;background:var(--warn)}
-.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.recbtn{background:var(--rec);border-color:var(--rec);color:#fff;font-weight:700;font-size:17px;padding:13px 26px;border-radius:12px}
-.recbtn:hover:not(:disabled){background:#ff6567;border-color:#ff6567}
-.recbtn.stop{background:#2a1214;border-color:var(--rec);color:#ffb3b4}
-.ctl{display:none;gap:10px;flex-wrap:wrap}
-.ctl.on{display:flex}
-.ctl button.paused{background:var(--warn);border-color:var(--warn);color:#1b1500;font-weight:600}
-.opts{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13px}
-.opts label{display:flex;gap:7px;align-items:center;cursor:pointer}
-#feedback{min-height:24px;line-height:1.45}
-.good{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--rec)}
-.side{display:flex;flex-direction:column;gap:12px;min-width:0}
-.card{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px}
-.card h2{margin:0 0 10px;font-size:12px;letter-spacing:.9px;text-transform:uppercase;color:var(--muted);font-weight:600}
-.check{display:flex;flex-direction:column;gap:8px}
-.check div{display:flex;gap:10px;align-items:center;color:var(--muted)}
-.check div::before{content:"";width:16px;height:16px;border-radius:50%;border:2px solid var(--line2);flex:none}
-.check div.ok{color:var(--fg)} .check div.ok::before{background:var(--ok);border-color:var(--ok)}
-#takes{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 360px);overflow:auto;padding-right:2px}
-.take{border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:10px 12px}
-.take.sel{border-color:var(--ok)}
-.take .h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.take .h b{font-size:15px}
-.take .m{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
-.take canvas{display:block;width:100%;height:42px;margin:8px 0;background:#0e1216;border-radius:8px}
-.take .btns{display:flex;flex-wrap:wrap;gap:6px}
-.take .btns button{padding:5px 10px;font-size:13px}
-.spin{display:inline-block;width:11px;height:11px;border:2px solid var(--line2);border-top-color:var(--accent);border-radius:50%;margin-right:6px;vertical-align:-1px;animation:rot .9s linear infinite}
-@keyframes rot{to{transform:rotate(360deg)}}
-.note{color:var(--muted);line-height:1.5;font-size:13px}
-dialog{background:var(--panel);color:var(--fg);border:1px solid var(--line2);border-radius:16px;padding:0;max-width:760px;width:calc(100% - 32px)}
-dialog::backdrop{background:rgba(0,0,0,.6)}
-dialog .dh{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
-dialog .dh b{flex:1;font-size:15px}
-dialog .db{padding:16px 18px;max-height:62vh;overflow:auto}
-dialog pre{white-space:pre-wrap;font:14px/1.6 var(--font);margin:0}
-dialog table{border-collapse:collapse;width:100%}
-dialog td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-dialog td:first-child{white-space:nowrap}
-/* floating script panel: drag by the top bar, resize from the corner, stays open while you play and record */
-.floatp{position:fixed;z-index:50;left:40px;top:90px;width:520px;height:420px;min-width:300px;min-height:160px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line2);border-radius:14px;box-shadow:0 14px 44px rgba(0,0,0,.6);resize:both;overflow:hidden}
-.floatp[hidden]{display:none}
-.fh{display:flex;align-items:center;gap:7px;padding:8px 10px;cursor:move;border-bottom:1px solid var(--line);user-select:none;touch-action:none;background:var(--panel2)}
-.fh b{font-size:14px;white-space:nowrap}.fh .sp{flex:1}
-.fh button{padding:3px 9px;font-size:12.5px;cursor:pointer}
-.fh input[type=range]{width:64px;accent-color:var(--accent)}
-.tab{border-radius:8px 8px 0 0;border-bottom:none;opacity:.7}.tab.on{background:var(--bg);opacity:1;border-color:var(--line2);font-weight:600}
-.fsub{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap;font-size:12.5px}
-.fsub button{padding:3px 9px;font-size:12.5px}.fsub .sp{flex:1}.fsub label{display:flex;gap:5px;align-items:center;color:var(--muted)}
-.fsub input[type=range]{width:70px;accent-color:var(--accent)}
-#scriptText{flex:1;width:100%;border:0;resize:none;background:transparent;color:var(--fg);padding:12px 16px;font:var(--fs,15px)/1.65 var(--font);outline:none;overflow:auto}
-/* flags: cue points on the picture */
-.seekwrap{position:relative;flex:1;height:24px}.seekwrap input{width:100%;margin:0}
-.ticks{position:absolute;left:7px;right:7px;top:0;bottom:0;pointer-events:none}
-.ticks i{position:absolute;top:3px;bottom:3px;width:3px;margin-left:-1px;border-radius:2px;background:var(--warn)}.ticks i.c{background:#c7a3ff}.ticks i.cur{background:#fff}
-.nowp{position:absolute;left:12px;bottom:12px;max-width:60%;background:rgba(12,15,18,.85);border:1px solid var(--line2);padding:5px 12px;border-radius:999px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nowp[hidden],.nextb[hidden],.holdb[hidden]{display:none}
-.nextb{position:absolute;right:14px;top:14px;display:flex;align-items:center;gap:12px;background:rgba(12,15,18,.92);border:1px solid var(--warn);border-radius:16px;padding:8px 16px;font-weight:600;max-width:70%}
-.nextb small{display:block;color:var(--muted);font-weight:500;font-size:11.5px;letter-spacing:.8px;text-transform:uppercase}
-.nextb b{font-size:50px;line-height:1;color:var(--warn);min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
-.nextb b.pop{animation:pop .35s ease-out}
-@keyframes pop{from{transform:scale(1.5);opacity:.4}to{transform:scale(1);opacity:1}}
-.holdb{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;align-items:center;gap:14px;background:rgba(12,15,18,.94);border:1px solid var(--warn);border-radius:14px;padding:10px 16px;font-size:14px;max-width:92%}
-.fl{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:9px;border:1px solid transparent}
-.fl.cur{background:var(--panel2);border-color:var(--line2)}
-.fl .ft{font-variant-numeric:tabular-nums;color:var(--muted);min-width:42px;cursor:pointer}
-.fl .fn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-.fl .fd{width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none}.fl .fd.c{background:#c7a3ff}
-.fl button{padding:2px 7px;font-size:12px}
-#flagList{display:flex;flex-direction:column;gap:2px;max-height:260px;overflow:auto}
-.card h2 .hb{float:right;padding:2px 8px;font-size:11.5px;text-transform:none;letter-spacing:0;font-weight:500}
-@media (max-width:1000px){.shell{grid-template-columns:1fr}.stage video{height:auto;max-height:60vh}#takes{max-height:none}}
-</style>
-</head>
-<body>
-<header class="top">
-  <div class="brand">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#ff4d4f"/><rect x="12" y="5" width="8" height="14" rx="4" fill="#fff"/><path d="M8 15a8 8 0 0 0 16 0M16 23v4" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
-    <div>Voice Studio<small>voice-over recorder</small></div>
-  </div>
-  <div class="pill" id="micPill"><i></i><span id="micTxt">Microphone off</span></div>
-  <button id="micBtn">Enable microphone</button>
-  <select id="micSel" aria-label="Microphone" hidden></select>
-  <div class="meter" title="Input level"><i id="meterFill"></i><b id="meterPeak"></b></div>
-  <span id="meterTxt" class="note" style="min-width:70px">&nbsp;</span>
-  <div class="spacer"></div>
-  <button id="testBtn" hidden title="Say a sentence and check the level">Test mic</button>
-  <button id="roomBtn" title="Record 10 seconds of the quiet room, used to clean the noise">Room tone</button>
-  <button id="folderBtn">Open folder</button>
-  <button id="myScriptBtn" title="Open your own script to read from while you record">My script</button>
-  <button id="vidChangeBtn" title="Use a different video to record against">Change video</button>
-  <input type="file" id="vidFile" accept="video/*" hidden>
-  <button id="helpBtn" aria-label="Keyboard shortcuts">?</button>
-  <button id="exportBtn" class="primary">Finish</button>
-</header>
-<div class="shell">
-  <div class="col">
-    <div class="stage">
-      <video id="pv" src="/proxy.mp4" muted playsinline preload="auto"></video>
-      <div class="live" id="live" hidden><i id="dot"></i><span id="liveTxt">REC 0:00</span><span class="badge ok" id="bAud">mic on</span><span class="badge ok" id="bVid">video playing</span></div>
-      <div class="overlay" id="count" hidden></div>
-      <div class="nowp" id="nowp" hidden></div>
-      <div class="nextb" id="nextb" hidden><div><small>Next part in</small><span id="nextLbl"></span></div><b id="nextNum">3</b></div>
-      <div class="holdb" id="holdb" hidden><span id="holdTxt"></span><button id="holdGo" class="primary">Continue ▶ <kbd>V</kbd></button></div>
-    </div>
-    <div class="note" id="vidInfo" style="margin-top:-4px"></div>
-    <div class="prog" id="prog" aria-hidden="true"><i id="progFill"></i></div>
-    <div class="tp" id="tp" role="group" aria-label="Video controls">
-      <button id="playBtn" aria-label="Play or pause the video" title="Play or pause (K)">▶</button>
-      <div class="seekwrap"><input type="range" id="seek" min="0" max="1000" value="0" aria-label="Video position"><div class="ticks" id="ticks"></div></div>
-      <span id="tpTime">0:00 / 0:00</span>
-    </div>
-    <div class="bar">
-      <button id="recBtn" class="recbtn">● Record the whole video <kbd>Space</kbd></button>
-      <button id="restartBtn" hidden>Start over</button>
-      <button id="watchBtn">Watch the video first</button>
-      <div class="opts">
-        <label><input type="checkbox" id="countIn" checked> 3-2-1 count-in</label>
-        <label><input type="checkbox" id="autoStop" checked> stop 3 s after the video ends</label>
-      </div>
-    </div>
-    <div class="bar" id="flagBar">
-      <button id="prevFlag" title="Jump to the previous flag">⏮ Previous flag <kbd>P</kbd></button>
-      <button id="nextFlag" title="Jump to the next flag">⏭ Next flag <kbd>N</kbd></button>
-      <button id="addFlag" title="Add a flag at this moment of the video">⚑ Add flag here <kbd>F</kbd></button>
-      <div class="opts">
-        <label title="When the picture reaches a flag it stops and waits, so you can finish what you are saying. Your voice keeps recording."><input type="checkbox" id="holdOn"> hold the picture at each flag</label>
-        <label title="Plays a short tick during the 3-2-1 before a flag. Use headphones, or the mic will hear it."><input type="checkbox" id="beepOn"> countdown ticks (headphones)</label>
-      </div>
-    </div>
-    <div class="ctl bar" id="ctl">
-      <button id="audBtn" title="Pause everything: stops saving your voice and pauses the video too.">⏸ Pause recording <kbd>A</kbd></button>
-      <button id="vidBtn" title="Freeze the picture. Your voice keeps being recorded.">⏸ Pause video <kbd>V</kbd></button>
-      <button id="redoBtn" title="Go back 5 seconds and say that bit again. The slip is flagged so it gets cut out later.">↺ Redo last 5 s <kbd>R</kbd></button>
-      <button id="flagBtn" title="Mark a slip without stopping. It gets cut out later.">✂ Mark a slip <kbd>M</kbd></button>
-      <button id="backBtn" title="Jump the picture back 5 seconds, no flag">⟲ −5 s <kbd>B</kbd></button>
-    </div>
-    <div id="feedback" role="status" aria-live="polite"></div>
-  </div>
-  <aside class="side">
-    <div class="card">
-      <h2>Ready to record?</h2>
-      <div class="check" id="check">
-        <div id="ck1">Microphone is on</div>
-        <div id="ck2">Level tested</div>
-        <div id="ck3">Room tone saved <span class="note">(optional)</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Flags <button class="hb" id="flagReload" title="Put the original section flags back">Reset to sections</button></h2>
-      <div id="flagList"><div class="note">No flags yet. Press F while the video plays to add one.</div></div>
-    </div>
-    <div class="card">
-      <h2>Your takes</h2>
-      <div id="takes"></div>
-    </div>
-    <p class="note">Watch the video, then record in one go while it plays. The picture is silent, so talk over it in your own words. Keep the mic about 10 cm away and leave a second of quiet at the start and the end. Stumbled? Press <b>R</b> to redo the last 5 seconds, or just say the line again: the bad bits are cut out afterwards. Choose the take to use and press <b>Finish</b>.</p>
-  </aside>
-</div>
-<dialog id="helpDlg">
-  <div class="dh"><b>Keyboard shortcuts</b><button class="closeBtn">Close</button></div>
-  <div class="db"><table>
-    <tr><td><kbd>Space</kbd></td><td>Start or stop recording</td></tr>
-    <tr><td><kbd>A</kbd></td><td>Pause or resume everything: your voice and the video</td></tr>
-    <tr><td><kbd>V</kbd></td><td>Pause or resume the video (voice keeps recording)</td></tr>
-    <tr><td><kbd>R</kbd></td><td>Redo the last 5 seconds: rewinds the picture and flags the slip</td></tr>
-    <tr><td><kbd>M</kbd></td><td>Mark a slip and keep going (it gets cut out later)</td></tr>
-    <tr><td><kbd>F</kbd></td><td>Add a flag at this moment of the video</td></tr>
-    <tr><td><kbd>N</kbd> <kbd>P</kbd></td><td>Jump to the next or previous flag</td></tr>
-    <tr><td><kbd>Enter</kbd></td><td>Continue after the picture was held at a flag</td></tr>
-    <tr><td><kbd>H</kbd></td><td>Turn "hold the picture at each flag" on or off</td></tr>
-    <tr><td><kbd>B</kbd></td><td>Jump the picture back 5 seconds</td></tr>
-    <tr><td><kbd>K</kbd></td><td>Play or pause the video when you are not recording</td></tr>
-    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Skip 5 seconds back or forward when you are not recording</td></tr>
-    <tr><td><kbd>?</kbd></td><td>Show this list</td></tr>
-  </table></div>
-</dialog>
-<div id="scriptPanel" class="floatp" hidden role="dialog" aria-label="Script reader">
-  <div class="fh" id="scriptDrag">
-    <button id="tabMine" class="tab on">My script</button><button id="tabTake" class="tab">Take script</button><span class="sp"></span>
-    <button id="fMinus" title="Smaller text" aria-label="Smaller text">A−</button><button id="fPlus" title="Bigger text" aria-label="Bigger text">A+</button>
-    <input type="range" id="fOp" min="35" max="100" value="96" title="See-through" aria-label="See-through">
-    <button id="scriptClose" aria-label="Close">✕</button></div>
-  <div class="fsub">
-    <button id="scrollBtn" title="Scroll the text slowly like a teleprompter">▶ Auto-scroll</button>
-    <input type="range" id="scrollSpd" min="5" max="120" value="30" title="Scroll speed" aria-label="Scroll speed">
-    <label title="Start scrolling when you press Record"><input type="checkbox" id="scrollRec"> with recording</label>
-    <label title="Scroll the script to the part that is on screen. Needs [m:ss] lines in the script."><input type="checkbox" id="followVid" checked> follow the video</label>
-    <span class="sp"></span><span id="saveNote" class="note"></span>
-    <button id="saveTake" hidden>Save edit</button><button id="copyBtn">Copy</button><button id="dlBtn" class="primary" hidden>Download</button>
-  </div>
-  <textarea id="scriptText" spellcheck="false" placeholder="Paste or type your script here. It saves by itself. Press Esc to leave the box, then Space starts recording."></textarea>
-</div>
-<audio id="player" preload="none"></audio>
-<script>
+"use strict";
 (function(){
-  var state = {takes:{}, selected:{}, roomtone:false};
+  var state = {takes:{}, selected:{}, roomtone:false}, recPeak = 0, savedIdx = 0, asBusy = false;
   var ctx = null, stream = null, node = null, analyser = null, capturing = false, chunks = [], recStartT = 0, timerH = null, counting = false, kind = 'full', offsetSec = 0, discard = false, stopTimer = null, aPaused = false, vPaused = false, vByAudio = false, samples = 0, segs = [], levelOk = false, wake = null, pollH = null;
   var $ = function(id){return document.getElementById(id)};
   var player = $('player'), pv = $('pv');
-  function api(path, opt){ return fetch(path, opt).then(function(r){ return r.json(); }); }
+  /* every request carries the app header: the studio refuses POSTs without it, which blocks other websites */
+  function xf(url, opt){ opt = opt || {}; opt.headers = Object.assign({'X-Voice-Studio': '1'}, opt.headers || {}); return fetch(url, opt); }
+  function api(path, opt){ return xf(path, opt).then(function(r){ return r.json(); }); }
+  var info = {capabilities: {ffmpeg: true, transcribe: true, clean: true}, sets: [], preferred_mic: ''};
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
   function mmss(s){ var m = Math.floor(s / 60), x = Math.floor(s % 60); return m + ':' + (x < 10 ? '0' : '') + x; }
   function store(k, v){ try{ if (v === undefined) return localStorage.getItem('vs_' + k); localStorage.setItem('vs_' + k, v); }catch(e){ return null; } }
@@ -263,11 +16,12 @@ dialog td:first-child{white-space:nowrap}
   /* ---------- takes ---------- */
   function load(){ return api('/api/state').then(function(s){ state = s; renderTakes(); renderCheck(); schedulePoll(); }); }
   function schedulePoll(){
-    var busy = (state.takes.full || []).some(function(k){ return k.job === 'running'; });
+    var busy = (state.takes.full || []).some(function(k){ return k.job === 'running' || k.clean === 'running'; });
     clearTimeout(pollH); if (busy) pollH = setTimeout(load, 3000);
   }
   function renderCheck(){
     $('ck1').className = stream ? 'ok' : ''; $('ck2').className = levelOk ? 'ok' : ''; $('ck3').className = state.roomtone ? 'ok' : '';
+    $('readyCard').hidden = !!(stream && levelOk);
   }
   function takeDate(t){ if (!t) return ''; var d = new Date(t * 1000); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
   function renderTakes(){
@@ -275,20 +29,25 @@ dialog td:first-child{white-space:nowrap}
     if (!t.length){ $('takes').innerHTML = '<div class="note">No takes yet. Your first recording will appear here.</div>'; return; }
     $('takes').innerHTML = t.slice().reverse().map(function(k){
       var pk = k.peak ? (20 * Math.log10(k.peak)).toFixed(0) + ' dBFS peak' : '';
-      var script = k.job === 'running' ? '<button data-t="' + k.file + '"><span class="spin"></span>Writing script…</button>' :
+      var caps = info.capabilities;
+      var script = !caps.transcribe && !k.script ? '' : k.job === 'running' ? '<button data-t="' + k.file + '"><span class="spin"></span>Writing script…</button>' :
         k.job === 'error' ? '<button data-t="' + k.file + '" title="' + esc(k.jobmsg) + '">Retry script</button>' :
         k.script ? '<button data-t="' + k.file + '" class="primary">📄 Script</button><button data-r="' + k.file + '">Read</button>' :
         '<button data-t="' + k.file + '">📄 Script</button>';
-      return '<div class="take' + (k.n === sel ? ' sel' : '') + '"><div class="h"><b>Take ' + k.n + '</b>' + (k.n === sel ? '<span class="badge ok">in use</span>' : '') +
+      var cl = k.clean === 'done' ? '<span class="badge ok" title="Noise removed, voice kept natural. The original is untouched.">voice cleaned</span>' : k.clean === 'running' ? '<span class="badge run"><span class="spin"></span>cleaning voice</span>' : '';
+      var clBtn = !caps.clean && k.clean !== 'done' ? '' : k.clean === 'done' ? '<button data-po="' + k.file + '" title="Hear the untouched recording">▶ Original</button>' : k.clean === 'running' ? '' : '<button data-cl="' + k.file + '" title="' + esc(k.cleanmsg || 'Remove noise and polish the voice') + '">' + (k.clean === 'error' ? 'Retry cleanup' : '✨ Clean voice') + '</button>';
+      return '<div class="take' + (k.n === sel ? ' sel' : '') + '"><div class="h"><b>Take ' + k.n + '</b>' + (k.n === sel ? '<span class="badge ok">in use</span>' : '') + cl +
         '<span class="m">' + (k.sec ? mmss(k.sec) : '') + (k.segs && k.segs[0] && k.segs[0].vid > 1 ? ' · from ' + mmss(k.segs[0].vid) : '') + (takeDate(k.mtime) ? ' · ' + takeDate(k.mtime) : '') + (pk ? ' · ' + pk : '') + '</span></div>' +
         '<canvas data-wf="' + k.file + '" aria-label="Waveform of take ' + k.n + '"></canvas>' +
-        '<div class="btns"><button data-p="' + k.file + '">▶ Listen</button><button data-w="' + k.file + '" data-o="' + (k.offset || 0) + '">▶ With picture</button>' + script +
+        '<div class="btns"><button data-p="' + k.file + '"' + (k.clean === 'done' ? ' data-c="1"' : '') + '>▶ Listen</button>' + clBtn + '<button data-w="' + k.file + '" data-o="' + (k.offset || 0) + '"' + (k.clean === 'done' ? ' data-c="1"' : '') + '>▶ With picture</button>' + script +
         (k.n === sel ? '' : '<button data-s="' + k.n + '">Use this one</button>') + '<button data-d="' + k.file + '">Delete</button></div></div>';
     }).join('');
     Array.prototype.forEach.call($('takes').querySelectorAll('button'), function(b){
       b.onclick = function(){
-        if (b.dataset.p) { stopPlayback(); player.src = '/rec/' + b.dataset.p + '?t=' + Date.now(); player.play(); }
-        else if (b.dataset.w) { watchWith(b.dataset.w, parseFloat(b.dataset.o) || 0); }
+        if (b.dataset.p) { stopPlayback(); player.src = (b.dataset.c ? '/rec/clean/' : '/rec/') + b.dataset.p + '?t=' + Date.now(); player.play(); }
+        else if (b.dataset.po) { stopPlayback(); player.src = '/rec/' + b.dataset.po + '?t=' + Date.now(); player.play(); }
+        else if (b.dataset.cl) { api('/api/clean?file=' + b.dataset.cl, {method:'POST'}).then(load); }
+        else if (b.dataset.w) { watchWith(b.dataset.w, parseFloat(b.dataset.o) || 0, !!b.dataset.c); }
         else if (b.dataset.t) { getScript(b.dataset.t); }
         else if (b.dataset.r) { readScript(b.dataset.r); }
         else if (b.dataset.s) { api('/api/select?cue=full&n=' + b.dataset.s, {method:'POST'}).then(load); }
@@ -306,7 +65,7 @@ dialog td:first-child{white-space:nowrap}
       for (var i = 0; i < n; i++){ var bh = Math.max(1.5, peaks[i] * (h - 4)); g.fillRect(i * bw, (h - bh) / 2, Math.max(1, bw - 0.6), bh); }
     }
     if (waveCache[file]) return paint(waveCache[file]);
-    fetch('/rec/' + file).then(function(r){ return r.arrayBuffer(); }).then(function(ab){
+    xf('/rec/' + file).then(function(r){ return r.arrayBuffer(); }).then(function(ab){
       var ac = new (window.AudioContext || window.webkitAudioContext)();
       return ac.decodeAudioData(ab).then(function(buf){
         var d = buf.getChannelData(0), N = 160, step = Math.floor(d.length / N) || 1, out = [], mx = 0.0001;
@@ -327,8 +86,8 @@ dialog td:first-child{white-space:nowrap}
     }).catch(function(){ say('<span class="bad">Could not reach the studio. Is it still running?</span>'); });
   }
   var withAudio = null;   // {off} while a take is being watched with the picture
-  function watchWith(file, off){
-    stopPlayback(); pv.currentTime = 0; player.src = '/rec/' + file + '?t=' + Date.now(); player.currentTime = 0; withAudio = {off: off};
+  function watchWith(file, off, clean){
+    stopPlayback(); pv.currentTime = 0; player.src = (clean ? '/rec/clean/' : '/rec/') + file + '?t=' + Date.now(); player.currentTime = 0; withAudio = {off: off};
     player.play().then(function(){ setTimeout(function(){ if (withAudio) pv.play(); }, Math.max(0, off * 1000)); });
   }
   function syncAudio(){ if (!withAudio) return; try{ player.currentTime = Math.max(0, pv.currentTime - withAudio.off); }catch(e){} }
@@ -337,16 +96,22 @@ dialog td:first-child{white-space:nowrap}
     if (pv.paused){ if (pv.ended) pv.currentTime = 0; pv.play(); if (withAudio){ syncAudio(); player.play(); } }
     else { pv.pause(); if (withAudio) player.pause(); }
   }
-  function seekBy(d){ if (capturing) return; pv.currentTime = Math.max(0, Math.min(pv.duration || 0, pv.currentTime + d)); syncAudio(); }
+  /* while recording, a backwards jump (only allowed when paused) flags the slip at the old position, like Redo */
+  function seekLog(prev){
+    if (!capturing) return;
+    if (pv.currentTime < prev - 0.5){ evt('redo', null, prev); mark(); }
+    evt('video_seek');
+  }
+  function seekBy(d){ if (capturing && !aPaused) return; var prev = pv.currentTime; pv.currentTime = Math.max(0, Math.min(pv.duration || 0, prev + d)); syncAudio(); seekLog(prev); }
   function tpUpdate(){
     var d = pv.duration || 0, t = pv.currentTime || 0;
     if (!seeking) $('seek').value = d ? Math.round(1000 * t / d) : 0;
     $('tpTime').textContent = mmss(t) + ' / ' + mmss(d);
     $('playBtn').textContent = pv.paused ? '▶' : '⏸';
   }
-  var seeking = false;
-  $('seek').oninput = function(){ seeking = true; if (pv.duration) pv.currentTime = pv.duration * $('seek').value / 1000; $('tpTime').textContent = mmss(pv.currentTime) + ' / ' + mmss(pv.duration || 0); };
-  $('seek').onchange = function(){ seeking = false; syncAudio(); };
+  var seeking = false, seekPrev = 0;
+  $('seek').oninput = function(){ if (!seeking) seekPrev = pv.currentTime; seeking = true; if (pv.duration) pv.currentTime = pv.duration * $('seek').value / 1000; $('tpTime').textContent = mmss(pv.currentTime) + ' / ' + mmss(pv.duration || 0); };
+  $('seek').onchange = function(){ seeking = false; syncAudio(); seekLog(seekPrev); };
   $('playBtn').onclick = togglePlay;
   pv.onclick = togglePlay;
   ['timeupdate','play','pause','loadedmetadata','seeked','ended'].forEach(function(n){ pv.addEventListener(n, tpUpdate); });
@@ -394,7 +159,7 @@ dialog td:first-child{white-space:nowrap}
   }
   function openMine(){ showPanel(); setTab('mine'); }
   function readScript(file){
-    fetch('/script/' + file.replace('.wav', '') + '.txt').then(function(r){ return r.text(); }).then(function(t){
+    xf('/script/' + file.replace('.wav', '') + '.txt').then(function(r){ return r.text(); }).then(function(t){
       curScript = file; takeText = t.replace(/\r/g, ''); takeDirty = false; $('tabTake').textContent = 'Take ' + file.replace('.wav', '').replace('full_t', '') + ' script';
       showPanel(); setTab('take');
     });
@@ -402,13 +167,13 @@ dialog td:first-child{white-space:nowrap}
   txt.addEventListener('input', function(){
     if (tab === 'mine'){
       txt.dataset.mine = txt.value; note('Saving…'); clearTimeout(notesTimer);
-      notesTimer = setTimeout(function(){ fetch('/api/notes', {method:'POST', body: txt.value}).then(function(){ note('Saved'); }).catch(function(){ note('Not saved'); }); }, 700);
+      notesTimer = setTimeout(function(){ xf('/api/notes', {method:'POST', body: txt.value}).then(function(){ note('Saved'); }).catch(function(){ note('Not saved'); }); }, 700);
     } else { takeText = txt.value; takeDirty = true; note('Edited, press Save edit'); }
   });
   txt.addEventListener('keydown', function(e){ if (e.key === 'Escape') txt.blur(); });
   $('saveTake').onclick = function(){
     if (!curScript) return;
-    fetch('/api/script_save?file=' + curScript, {method:'POST', body: txt.value}).then(function(r){ return r.json(); }).then(function(r){ note(r.ok ? 'Saved. The download uses this version.' : 'Could not save'); takeDirty = false; });
+    xf('/api/script_save?file=' + curScript, {method:'POST', body: txt.value}).then(function(r){ return r.json(); }).then(function(r){ note(r.ok ? 'Saved. The download uses this version.' : 'Could not save'); takeDirty = false; });
   };
   $('tabMine').onclick = function(){ setTab('mine'); };
   $('tabTake').onclick = function(){ if (curScript) setTab('take'); else note('Press Read on a take first'); };
@@ -445,7 +210,6 @@ dialog td:first-child{white-space:nowrap}
   $('helpBtn').onclick = function(){ $('helpDlg').showModal(); };
 
   /* ---------- microphone ---------- */
-  var workletSrc = "class R extends AudioWorkletProcessor{process(i){var c=i[0]&&i[0][0];if(c){this.port.postMessage(c.slice(0));}return true;}}registerProcessor('rec',R);";
   function setMicUi(on, label){
     $('micPill').className = 'pill' + (on ? ' ok' : ''); $('micTxt').textContent = label;
     $('micBtn').hidden = on; $('micSel').hidden = !on; $('testBtn').hidden = !on; renderCheck();
@@ -458,12 +222,16 @@ dialog td:first-child{white-space:nowrap}
       stream = s;
       if (ctx) { try{ ctx.close(); }catch(e){} }
       ctx = new (window.AudioContext || window.webkitAudioContext)({sampleRate:48000}); try{ ctx.resume(); }catch(e){}
-      var url = URL.createObjectURL(new Blob([workletSrc], {type:'application/javascript'}));
-      return ctx.audioWorklet.addModule(url).then(function(){
+      return ctx.audioWorklet.addModule('/static/worklet.js').then(function(){
         var src = ctx.createMediaStreamSource(stream);
         analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
         node = new AudioWorkletNode(ctx, 'rec');
-        node.port.onmessage = function(e){ if (capturing && !aPaused){ chunks.push(e.data); samples += e.data.length; } };
+        node.port.onmessage = function(e){
+          if (!capturing || aPaused) return;
+          var c = e.data, q = new Int16Array(c.length);
+          for (var i = 0; i < c.length; i++){ var x = Math.max(-1, Math.min(1, c[i])), a = x < 0 ? -x : x; if (a > recPeak) recPeak = a; q[i] = x < 0 ? x * 32768 : x * 32767; }
+          chunks.push(q); samples += c.length;
+        };
         src.connect(analyser); src.connect(node);
         return navigator.mediaDevices.enumerateDevices();
       });
@@ -472,7 +240,7 @@ dialog td:first-child{white-space:nowrap}
       var curId = stream.getAudioTracks()[0].getSettings().deviceId;
       sel.innerHTML = ins.map(function(d,i){ return '<option value="' + d.deviceId + '">' + esc(d.label || ('Microphone ' + (i+1))) + '</option>'; }).join('');
       sel.value = curId;
-      var saved = store('mic'), pref = ins.filter(function(d){ return saved ? d.deviceId === saved : /fifine/i.test(d.label); })[0];
+      var saved = store('mic'), pref = ins.filter(function(d){ if (saved) return d.deviceId === saved; try{ return !!info.preferred_mic && new RegExp(info.preferred_mic, 'i').test(d.label); }catch(e){ return false; } })[0];
       if (pref && !deviceId && pref.deviceId !== curId){ sel.value = pref.deviceId; return startMic(pref.deviceId); }
       var label = (sel.options[sel.selectedIndex] || {}).text || 'Microphone';
       setMicUi(true, label.replace(/\s*\(.*\)\s*$/, '')); meterLoop();
@@ -523,9 +291,9 @@ dialog td:first-child{white-space:nowrap}
     s('RIFF'); v.setUint32(o, 36 + n * 2, true); o += 4; s('WAVEfmt '); v.setUint32(o, 16, true); o += 4;
     v.setUint16(o, 1, true); o += 2; v.setUint16(o, 1, true); o += 2; v.setUint32(o, sr, true); o += 4; v.setUint32(o, sr * 2, true); o += 4;
     v.setUint16(o, 2, true); o += 2; v.setUint16(o, 16, true); o += 2; s('data'); v.setUint32(o, n * 2, true); o += 4;
-    var pk = 0;
-    parts.forEach(function(p){ for (var i = 0; i < p.length; i++){ var x = Math.max(-1, Math.min(1, p[i])); var a = Math.abs(x); if (a > pk) pk = a; v.setInt16(o, x < 0 ? x * 32768 : x * 32767, true); o += 2; } });
-    return {blob: new Blob([buf], {type:'audio/wav'}), sec: n / sr, peak: pk};
+    var pcm = new Int16Array(buf, 44, n), at = 0;
+    parts.forEach(function(p){ pcm.set(p, at); at += p.length; });
+    return {blob: new Blob([buf], {type:'audio/wav'}), sec: n / sr, peak: recPeak};
   }
   function countdown(){
     return new Promise(function(res){
@@ -534,8 +302,8 @@ dialog td:first-child{white-space:nowrap}
       var h = setInterval(function(){ n--; if (n <= 0){ clearInterval(h); ov.hidden = true; counting = false; res(); } else ov.textContent = n; }, 800);
     });
   }
-  function evt(ev, label){
-    var o = {ev: ev, t: +((performance.now() - recStartT) / 1000).toFixed(3), wav: +(samples / (ctx ? ctx.sampleRate : 48000)).toFixed(3), vid: +(pv.currentTime || 0).toFixed(3)};
+  function evt(ev, label, vid){
+    var o = {ev: ev, t: +((performance.now() - recStartT) / 1000).toFixed(3), wav: +(samples / (ctx ? ctx.sampleRate : 48000)).toFixed(3), vid: +(vid != null ? vid : (pv.currentTime || 0)).toFixed(3)};
     if (label) o.label = label; segs.push(o);
   }
   function mark(){
@@ -546,13 +314,14 @@ dialog td:first-child{white-space:nowrap}
     $('live').hidden = !on; $('restartBtn').hidden = !on;
     var b = $('recBtn'); b.classList.toggle('stop', on);
     b.innerHTML = on ? '■ Stop recording <kbd>Space</kbd>' : '● Record the whole video <kbd>Space</kbd>';
-    $('watchBtn').disabled = on; $('seek').disabled = on; $('playBtn').disabled = on;
+    $('watchBtn').disabled = on; $('playBtn').disabled = on;
     $('ctl').classList.toggle('on', on && kind === 'full');
     if (!on){ aPaused = false; vPaused = false; vByAudio = false; }
     syncUi();
   }
   function syncUi(){
     var a = $('audBtn'), v = $('vidBtn');
+    $('seek').disabled = capturing && !aPaused; $('tp').classList.toggle('scrub', capturing && aPaused); $('pauseHint').hidden = !(capturing && aPaused);
     a.innerHTML = aPaused ? '▶ Resume recording <kbd>A</kbd>' : '⏸ Pause recording <kbd>A</kbd>'; a.classList.toggle('paused', aPaused);
     v.innerHTML = vPaused ? '▶ Resume video <kbd>V</kbd>' : '⏸ Pause video <kbd>V</kbd>'; v.classList.toggle('paused', vPaused);
     var ba = $('bAud'), bv = $('bVid');
@@ -607,12 +376,13 @@ dialog td:first-child{white-space:nowrap}
     if (kind === 'full'){ try{ pv.currentTime = from || 0; }catch(e){} clearMarks(); lastHeld = -1; hideHold(); }
     say('');
     countdown().then(function(){
-      chunks = []; samples = 0; segs = []; aPaused = false; vPaused = false; capturing = true; recStartT = performance.now(); offsetSec = 0; evt('start');
+      chunks = []; savedIdx = 0; samples = 0; recPeak = 0; segs = []; aPaused = false; vPaused = false; capturing = true; recStartT = performance.now(); offsetSec = 0; evt('start');
       setLive(true); if (kind === 'full' && window.vsOnRecordStart) window.vsOnRecordStart();
       try{ if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function(l){ wake = l; }).catch(function(){}); }catch(e){}
       if (kind === 'full'){
         pv.play().then(function(){ offsetSec = (performance.now() - recStartT) / 1000; evt('video_play'); }).catch(function(){});
       }
+      var asH = setInterval(function(){ if (!capturing) clearInterval(asH); else autosave(); }, 5000);
       timerH = setInterval(function(){
         var t = samples / (ctx ? ctx.sampleRate : 48000); $('liveTxt').textContent = (kind === 'room' ? 'ROOM TONE ' : (aPaused ? 'PAUSED ' : 'REC ')) + mmss(t);
         if (pv.duration) $('progFill').style.width = Math.min(100, 100 * pv.currentTime / pv.duration) + '%';
@@ -620,32 +390,40 @@ dialog td:first-child{white-space:nowrap}
       if (kind === 'room') setTimeout(function(){ if (capturing) stop(); }, 10000);
     });
   }
+  /* crash safety: raw audio goes to disk every 5 s, so a crash or closed window loses at most a few seconds */
+  function autosave(){
+    if (kind !== 'full' || asBusy || savedIdx >= chunks.length) return;
+    var part = chunks.slice(savedIdx), upto = chunks.length, n = 0; part.forEach(function(c){ n += c.length; });
+    var raw = new Int16Array(n), at = 0; part.forEach(function(c){ raw.set(c, at); at += c.length; });
+    asBusy = true;
+    xf('/api/autosave?sr=' + ctx.sampleRate + (savedIdx === 0 ? '&reset=1' : ''), {method:'POST', body: raw.buffer}).then(function(){ savedIdx = upto; }).catch(function(){}).then(function(){ asBusy = false; });
+  }
   function stop(){
     if (!capturing) return;
     evt('stop'); var segOut = JSON.stringify(segs); capturing = false; clearInterval(timerH); clearTimeout(stopTimer); try{ pv.pause(); }catch(e){}
     try{ if (wake) wake.release(); }catch(e){} wake = null;
     setLive(false); if (window.vsOnRecordStop) window.vsOnRecordStop();
     var w = encodeWav(chunks, ctx.sampleRate); chunks = [];
-    if (discard){ say(''); return; }
+    if (discard){ say(''); xf('/api/autosave_clear', {method:'POST'}); return; }
     if (kind === 'room'){
       api('/api/roomtone', {method:'POST', body: w.blob}).then(function(){ say('<span class="good">Room tone saved (' + w.sec.toFixed(1) + ' s).</span>'); load(); });
       return;
     }
     var pkdb = w.peak > 0 ? 20 * Math.log10(w.peak) : -90, msg = [];
-    if (w.sec < 3){ say('<span class="warn">That was too short, nothing saved.</span>'); return; }
+    if (w.sec < 3){ say('<span class="warn">That was too short, nothing saved.</span>'); xf('/api/autosave_clear', {method:'POST'}); return; }
     msg.push(mmss(w.sec));
     if (pkdb > -1) msg.push('<span class="bad">it clipped: lower the mic gain and record again</span>');
     else if (pkdb < -30) msg.push('<span class="warn">very quiet: move closer to the mic</span>');
     else msg.push('<span class="good">level good (peak ' + pkdb.toFixed(0) + ' dBFS)</span>');
     say('Saving…');
-    fetch('/api/take?cue=full&sec=' + w.sec.toFixed(3) + '&offset=' + offsetSec.toFixed(3) + '&peak=' + w.peak.toFixed(4) + '&segs=' + encodeURIComponent(segOut), {method:'POST', body: w.blob}).then(function(r){ return r.json(); }).then(function(r){
-      say('Take ' + r.n + ' saved · ' + msg.join(' · ') + ' · <span class="note">writing the script in the background</span>'); return load();
+    xf('/api/take?cue=full&sec=' + w.sec.toFixed(3) + '&offset=' + offsetSec.toFixed(3) + '&peak=' + w.peak.toFixed(4) + '&segs=' + encodeURIComponent(segOut), {method:'POST', body: w.blob}).then(function(r){ return r.json(); }).then(function(r){
+      xf('/api/autosave_clear', {method:'POST'});
+      say('Take ' + r.n + ' saved · ' + msg.join(' · ') + ' · <span class="note">cleaning the voice and writing the script in the background</span>'); return load();
     }).catch(function(){ say('<span class="bad">Could not save the take. Is the studio still running?</span>'); });
   }
   pv.addEventListener('ended', function(){
     if (capturing && kind === 'full'){
-      if ($('autoStop').checked){ say('The video has finished. Stopping in 3 seconds…'); stopTimer = setTimeout(function(){ stop(); }, 3000); }
-      else say('The video has finished. Press Stop when you are done.');
+      say('The video has finished. Recording carries on until you press Stop. To redo a part, pause and drag the slider back.');
     }
   });
   $('recBtn').onclick = function(){ record('full'); };
@@ -654,13 +432,13 @@ dialog td:first-child{white-space:nowrap}
   $('restartBtn').onclick = function(){ discard = true; stop(); setTimeout(function(){ record('full'); }, 200); };
   $('roomBtn').onclick = function(){ if (!capturing){ say('<span class="warn">Stay quiet for 10 seconds…</span>'); record('room'); } };
   $('watchBtn').onclick = function(){ stopPlayback(); pv.currentTime = 0; pv.play(); };
-  $('folderBtn').onclick = function(){ api('/api/openfolder', {method:'POST'}); };
+  $('folderBtn').onclick = function(){ api('/api/openfolder', {method:'POST'}).then(function(r){ if (r.path) say('<span class="note">Takes folder: ' + esc(r.path) + '</span>'); }); };
   $('exportBtn').onclick = function(){
     api('/api/export', {method:'POST'}).then(function(r){
-      say(r.ok ? '<span class="good">Done. I saved your choice (' + esc(r.file) + '). Tell Claude you are finished.</span>' : '<span class="warn">Record a take first.</span>');
+      say(r.ok ? '<span class="good">Done. I saved your choice (' + esc(r.file) + (r.clean ? ', with the cleaned voice' : '') + '). Your editor or pipeline can pick it up now.</span>' : '<span class="warn">Record a take first.</span>');
     });
   };
-  ['countIn', 'autoStop'].forEach(function(id){
+  ['countIn'].forEach(function(id){
     var v = store(id); if (v !== null && v !== undefined) $(id).checked = v === '1';
     $(id).onchange = function(){ store(id, $(id).checked ? '1' : '0'); };
   });
@@ -689,7 +467,7 @@ dialog td:first-child{white-space:nowrap}
   /* ---------- flags: cue points, 3-2-1 countdown, hold at a flag ---------- */
   var cues = [], heldIdx = -1, lastHeld = -1, lastNum = 0, lastFollow = -2, cuesTimer = null, beepCtx = null;
   function loadCues(){ return api('/api/cues').then(function(r){ cues = (r.cues || []).slice().sort(function(a, b){ return a.t - b.t; }); renderFlags(); renderTicks(); }); }
-  function saveCues(){ clearTimeout(cuesTimer); cuesTimer = setTimeout(function(){ fetch('/api/cues', {method:'POST', body: JSON.stringify(cues)}); }, 400); }
+  function saveCues(){ clearTimeout(cuesTimer); cuesTimer = setTimeout(function(){ xf('/api/cues', {method:'POST', body: JSON.stringify(cues)}); }, 400); }
   function curIdx(t){ var k = -1; for (var i = 0; i < cues.length; i++){ if (cues[i].t <= t + 0.001) k = i; else break; } return k; }
   function renderTicks(){
     var d = pv.duration || 0, box = $('ticks'); if (!d){ box.innerHTML = ''; return; }
@@ -708,8 +486,8 @@ dialog td:first-child{white-space:nowrap}
     Array.prototype.forEach.call(box.querySelectorAll('[data-rm]'), function(b){ b.onclick = function(){ cues.splice(+b.dataset.rm, 1); saveCues(); renderFlags(); renderTicks(); }; });
   }
   function jumpTo(t){
-    pv.currentTime = Math.max(0, t); lastHeld = -1; syncAudio();
-    if (capturing){ evt('video_seek'); }
+    var prev = pv.currentTime; pv.currentTime = Math.max(0, t); lastHeld = -1; syncAudio();
+    seekLog(prev);
     if (heldIdx >= 0 && !capturing){ hideHold(); }
   }
   function jumpFlag(dir){
@@ -786,13 +564,13 @@ dialog td:first-child{white-space:nowrap}
   loadCues();
   /* ---------- change video ---------- */
   function showVideoInfo(v){ if (v) $('vidInfo').textContent = 'Video: ' + (v.name || 'proxy.mp4') + (v.duration ? ' · ' + mmss(v.duration) : ''); }
-  $('vidChangeBtn').onclick = function(){ if (capturing) return; $('vidFile').click(); };
+  $('vidChangeBtn').onclick = function(){ if (capturing) return; if (!info.capabilities.ffmpeg){ say('<span class="warn">Install ffmpeg to change the video.</span>'); return; } $('vidFile').click(); };
   $('vidFile').onchange = function(){
     var f = $('vidFile').files[0]; if (!f) return;
     var ok = confirm('Use "' + f.name + '" as the video to record against?\n\nYour saved takes stay, but they were recorded against the old video, so record again for the new one.');
     if (!ok){ $('vidFile').value = ''; return; }
     stopPlayback(); $('vidChangeBtn').disabled = true; say('<span class="warn"><span class="spin"></span>Sending the video to the studio… (' + Math.round(f.size / 1048576) + ' MB)</span>');
-    fetch('/api/setvideo?name=' + encodeURIComponent(f.name), {method:'POST', body: f}).then(function(r){ return r.json(); }).then(function(r){
+    xf('/api/setvideo?name=' + encodeURIComponent(f.name), {method:'POST', body: f}).then(function(r){ return r.json(); }).then(function(r){
       if (r.error){ say('<span class="bad">' + esc(r.error) + '</span>'); $('vidChangeBtn').disabled = false; return; }
       say('<span class="warn"><span class="spin"></span>Preparing the video… this takes about a minute.</span>');
       (function poll(){ api('/api/video_status').then(function(j){
@@ -804,10 +582,41 @@ dialog td:first-child{white-space:nowrap}
       }); })();
     }).catch(function(){ say('<span class="bad">Could not send the video. Is the studio still running?</span>'); $('vidChangeBtn').disabled = false; });
   };
+  /* ---------- projects (sets) and about ---------- */
+  function loadInfo(){
+    return api('/api/info').then(function(r){
+      info = r; var sel = $('setSel');
+      $('aboutTxt').textContent = 'Voice Studio ' + r.version + ' · data folder: ' + r.data_dir;
+      $('brandSub').textContent = r.current_set ? 'project: ' + r.current_set : 'voice-over recorder';
+      document.title = 'Voice Studio' + (r.current_set ? ' · ' + r.current_set : '');
+      $('setPick').hidden = !r.sets.length;
+      sel.innerHTML = (r.current_set && r.sets.indexOf(r.current_set) < 0 ? '<option value="">' + esc(r.current_set) + '</option>' : '') +
+        r.sets.map(function(n){ return '<option value="' + esc(n) + '">' + esc(n) + '</option>'; }).join('');
+      sel.value = r.current_set || '';
+      renderTakes();
+    }).catch(function(){});
+  }
+  $('setSel').onchange = function(){
+    var name = $('setSel').value;
+    if (capturing || !name || name === info.current_set){ $('setSel').value = info.current_set || ''; return; }
+    if (!confirm('Switch to the project "' + name + '"?\n\nThe takes of "' + (info.current_set || 'this project') + '" move to recordings_archive and stay safe there.')){ $('setSel').value = info.current_set || ''; return; }
+    stopPlayback(); player.removeAttribute('src'); player.load();
+    api('/api/sets/switch?name=' + encodeURIComponent(name), {method:'POST'}).then(function(r){
+      if (r.error){ say('<span class="bad">' + esc(r.error) + '</span>'); $('setSel').value = info.current_set || ''; return; }
+      waveCache = {}; pv.src = '/proxy.mp4?t=' + Date.now(); pv.load(); clearMarks(); $('progFill').style.width = '0%';
+      say('<span class="good">Project "' + esc(name) + '" loaded. The takes of "' + esc(r.previous) + '" are in recordings_archive.</span>');
+      return Promise.all([loadInfo(), loadCues(), load().then(function(){ showVideoInfo(state.video); })]);
+    }).catch(function(){ say('<span class="bad">Could not reach the studio. Is it still running?</span>'); });
+  };
+  loadInfo();
   /* reuse the microphone permission if it was already granted */
   try{ navigator.permissions.query({name:'microphone'}).then(function(p){ if (p.state === 'granted') startMic(null); }); }catch(e){}
-  load().then(function(){ showVideoInfo(state.video); });
+  load().then(function(){
+    showVideoInfo(state.video);
+    if (state.autosave > 3 && !capturing){
+      say('<span class="warn">An unsaved recording of ' + mmss(state.autosave) + ' was found (the studio closed while recording).</span> <button id="recoverBtn" class="primary">Recover it as a take</button> <button id="dropBtn">Discard</button>');
+      $('recoverBtn').onclick = function(){ api('/api/autosave_recover', {method:'POST'}).then(function(r){ say(r.n ? '<span class="good">Recovered as Take ' + r.n + '.</span>' : '<span class="bad">Could not recover it.</span>'); load(); }); };
+      $('dropBtn').onclick = function(){ api('/api/autosave_clear', {method:'POST'}).then(function(){ say(''); load(); }); };
+    }
+  });
 })();
-</script>
-</body>
-</html>
